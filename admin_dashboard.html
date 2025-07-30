@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - TNEB CMS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #0056b3;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 300px;
+        }
+        input, button {
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        button {
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #003d82;
+        }
+        #divisionList, #logEntries {
+            margin-top: 20px;
+        }
+        .division-item, .log-entry {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+        <div class="section">
+            <h2>Add Division Head</h2>
+            <form id="addDivisionForm">
+                <input type="text" id="divisionName" placeholder="Division Name" required>
+                <input type="text" id="divisionUsername" placeholder="Username" required>
+                <input type="password" id="divisionPassword" placeholder="Password" required>
+                <button type="submit">Add Division Head</button>
+            </form>
+        </div>
+        <div class="section">
+            <h2>Division Heads</h2>
+            <div id="divisionList"></div>
+        </div>
+        <div class="section">
+            <h2>System Log</h2>
+            <p>All actions are recorded in real-time to system_log.txt. Use the "View System Log" button to see its contents.</p>
+            <div id="logEntries"></div>
+            <button onclick="clearLogEntries()">Clear Log</button>
+            <button onclick="viewSystemLog()">View System Log</button>
+        </div>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script>
+        if (!localStorage.getItem('adminLoggedIn')) {
+            window.location.href = 'admin_login.html';
+        }
+
+        function addDivision(event) {
+            event.preventDefault();
+            const name = document.getElementById('divisionName').value;
+            const username = document.getElementById('divisionUsername').value;
+            const password = document.getElementById('divisionPassword').value;
+
+            const divisions = JSON.parse(localStorage.getItem('divisions') || '[]');
+            divisions.push({ name, username, password });
+            localStorage.setItem('divisions', JSON.stringify(divisions));
+
+            logAction(`Admin added new division: ${name}`);
+            alert('Division added successfully');
+            document.getElementById('addDivisionForm').reset();
+            updateDivisionList();
+        }
+
+        function updateDivisionList() {
+            const divisions = JSON.parse(localStorage.getItem('divisions') || '[]');
+            const divisionList = document.getElementById('divisionList');
+            divisionList.innerHTML = '';
+            divisions.forEach((division, index) => {
+                const divisionItem = document.createElement('div');
+                divisionItem.className = 'division-item';
+                divisionItem.innerHTML = `
+                    ${division.name} (${division.username})
+                    <button class="delete-btn" onclick="deleteDivision(${index})">Delete</button>
+                `;
+                divisionList.appendChild(divisionItem);
+            });
+        }
+
+        function deleteDivision(index) {
+            const divisions = JSON.parse(localStorage.getItem('divisions') || '[]');
+            const deletedDivision = divisions.splice(index, 1)[0];
+            localStorage.setItem('divisions', JSON.stringify(divisions));
+            logAction(`Admin deleted division: ${deletedDivision.name}`);
+            updateDivisionList();
+        }
+
+        function updateLogEntries() {
+            const logEntries = getLogEntries();
+            const logEntriesElement = document.getElementById('logEntries');
+            logEntriesElement.innerHTML = '';
+            logEntries.forEach(entry => {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.textContent = `${entry.timestamp}: ${entry.action}`;
+                logEntriesElement.appendChild(logEntry);
+            });
+        }
+
+        function clearLogEntries() {
+            clearLog();
+            updateLogEntries();
+            alert('All logs cleared, including system_log.txt');
+        }
+
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            logAction('Admin logged out');
+            window.location.href = 'admin_login.html';
+        }
+
+        function viewSystemLog() {
+            const systemLog = getSystemLog();
+            const logWindow = window.open('', 'System Log', 'width=800,height=600');
+            logWindow.document.write('<pre>' + systemLog + '</pre>');
+        }
+
+        document.getElementById('addDivisionForm').addEventListener('submit', addDivision);
+        updateDivisionList();
+        updateLogEntries();
+        logAction('Admin accessed dashboard');
+    </script>
+</body>
+</html>
+

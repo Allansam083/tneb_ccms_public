@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Division Dashboard - TNEB CMS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #28a745;
+        }
+        .complaint-card {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        .complaint-id {
+            font-weight: bold;
+            color: #28a745;
+        }
+        select, button {
+            padding: 5px;
+            margin-top: 10px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .progress-tracker {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -50%;
+            right: 50%;
+            height: 2px;
+            background-color: #ccc;
+            z-index: -1;
+        }
+        .progress-step:first-child::before {
+            display: none;
+        }
+        .progress-step.completed::before {
+            background-color: #28a745;
+        }
+        .progress-step .step-icon {
+            width: 30px;
+            height: 30px;
+            background-color: #ccc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 5px;
+        }
+        .progress-step.completed .step-icon {
+            background-color: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Division Dashboard</h1>
+        <h2 id="divisionName"></h2>
+        <div id="complaintsList"></div>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script>
+        if (!localStorage.getItem('divisionLoggedIn')) {
+            window.location.href = 'division_login.html';
+        }
+
+        const currentDivision = localStorage.getItem('currentDivision');
+        document.getElementById('divisionName').textContent = currentDivision;
+
+        function updateComplaintStatus(complaintId, newStatus) {
+            let complaints = JSON.parse(localStorage.getItem('complaints') || '[]');
+            const complaintIndex = complaints.findIndex(c => c.id === complaintId);
+            
+            if (complaintIndex !== -1) {
+                complaints[complaintIndex].status = newStatus;
+                localStorage.setItem('complaints', JSON.stringify(complaints));
+                logAction(`Updated complaint ${complaintId} status to ${newStatus}`);
+                loadComplaints();
+            }
+        }
+
+        function loadComplaints() {
+            const complaints = JSON.parse(localStorage.getItem('complaints') || '[]');
+            const divisionComplaints = complaints.filter(c => c.division === currentDivision);
+            const complaintsList = document.getElementById('complaintsList');
+            
+            complaintsList.innerHTML = '';
+            
+            if (divisionComplaints.length === 0) {
+                complaintsList.innerHTML = '<p>No complaints for your division.</p>';
+                logAction(`No complaints found for ${currentDivision}`);
+                return;
+            }
+
+            divisionComplaints.forEach(complaint => {
+                const complaintCard = document.createElement('div');
+                complaintCard.className = 'complaint-card';
+                complaintCard.innerHTML = `
+                    <div class="complaint-id">Complaint ID: ${complaint.id}</div>
+                    <div>Type: ${complaint.type}</div>
+                    <div>Description: ${complaint.description}</div>
+                    <div>Customer: ${complaint.name}</div>
+                    <select onchange="updateComplaintStatus('${complaint.id}', this.value)">
+                        <option value="Registered" ${complaint.status === 'Registered' ? 'selected' : ''}>Registered</option>
+                        <option value="Technician Allotted" ${complaint.status === 'Technician Allotted' ? 'selected' : ''}>Technician Allotted</option>
+                        <option value="Work in Progress" ${complaint.status === 'Work in Progress' ? 'selected' : ''}>Work in Progress</option>
+                        <option value="Resolved" ${complaint.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                    </select>
+                    <div class="progress-tracker">
+                        <div class="progress-step ${complaint.status !== 'Registered' ? 'completed' : ''}">
+                            <div class="step-icon">✓</div>
+                            <div>Registered</div>
+                        </div>
+                        <div class="progress-step ${['Technician Allotted', 'Work in Progress', 'Resolved'].includes(complaint.status) ? 'completed' : ''}">
+                            <div class="step-icon">✓</div>
+                            <div>Technician Allotted</div>
+                        </div>
+                        <div class="progress-step ${['Work in Progress', 'Resolved'].includes(complaint.status) ? 'completed' : ''}">
+                            <div class="step-icon">✓</div>
+                            <div>Work in Progress</div>
+                        </div>
+                        <div class="progress-step ${complaint.status === 'Resolved' ? 'completed' : ''}">
+                            <div class="step-icon">✓</div>
+                            <div>Resolved</div>
+                        </div>
+                    </div>
+                `;
+                complaintsList.appendChild(complaintCard);
+            });
+
+            logAction(`Viewed complaints for ${currentDivision}`);
+        }
+
+        function logout() {
+            localStorage.removeItem('divisionLoggedIn');
+            localStorage.removeItem('currentDivision');
+            logAction(`Division logged out: ${currentDivision}`);
+            window.location.href = 'division_login.html';
+        }
+
+        loadComplaints();
+        logAction(`Division accessed dashboard: ${currentDivision}`);
+    </script>
+</body>
+</html>
+
