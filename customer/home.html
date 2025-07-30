@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNEB Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('image.jpg');
+            background-size: cover;
+            background-position: center;
+            backdrop-filter: blur(3px);
+            background-position: cover;
+            background-color: #1f3b57;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        h2:hover, h4:hover, p:hover {
+            transform: scale(1.1);
+            transition: all 0.3s ease-in-out;
+            text-shadow: 5px 5px 5px rgba(0, 0, 0, 0.3);
+            text-decoration-color: #151515;
+            color: #0f0602;
+            transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out;
+            transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        .content-section {
+            color: antiquewhite;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif, monospace;
+            padding: 20px;
+        }
+        .container {
+            flex: 1;
+        }
+        .modal-content {
+            background: linear-gradient(to bottom right, #c2bfbf, #979999);
+            border: none;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(235, 229, 229, 0.3);
+        }
+        .modal-header {
+            background: linear-gradient(to right, #151515, #3f3f3f);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 1.5rem;
+        }
+        .modal-body {
+            padding: 2rem;
+        }
+        .form-control, .form-select {
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+        }
+        .btn-primary {
+            background: linear-gradient(to right, #1f3b57, #2c5282);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .form-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+        .progress-tracker {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            padding: 10px;
+        }
+        .progress-step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .progress-step:last-child::after {
+            display: none;
+        }
+        .progress-step.completed {
+            color: #4CAF50;
+        }
+        .progress-step.completed::after {
+            background-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="logo.png" alt="TNEB Logo" width="30" height="30" class="d-inline-block align-text-top">
+                TNEB CMS
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link active" href="#">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#complaintModal">Raise Complaint</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#statusModal">Check Status</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                </ul>
+                <div class="navbar-nav">
+                    <a class="nav-link logout-btn" href="#" onclick="logout()">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="content-section">
+            <h2 class="text-center mb-5">Welcome to TNEB Complaint Management System</h2>
+            
+            <div class="row">
+                <div class="col-md-12">
+                    <h4>Key Features</h4>
+                    <ul>
+                        <li>24/7 Complaint Registration</li>
+                        <li>Real-Time Tracking of Complaint Status</li>
+                        <li>Fast Resolution of Issues</li>
+                        <li>Efficient Routing to Concerned Departments</li>
+                        <li>Dedicated Consumer Support</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complaint Modal -->
+    <div class="modal fade" id="complaintModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Raise New Complaint</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="complaintForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Name*</label>
+                                <input type="text" class="form-control" id="customerName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">District*</label>
+                                <input type="text" class="form-control" id="district" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Division*</label>
+                                <select class="form-select" id="complaintDivision" required>
+                                    <option value="">Select Division</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">PIN Code*</label>
+                                <input type="text" class="form-control" id="pinCode" pattern="[0-9]{6}" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Complaint Type*</label>
+                            <select class="form-select" id="complaintType" required>
+                                <option value="">Select Complaint Type</option>
+                                <option value="Power Outage">Power Outage</option>
+                                <option value="Voltage Fluctuation">Voltage Fluctuations</option>
+                                <option value="Cable Fault">Cable Fault</option>
+                                <option value="Voltage Reversal">Voltage Reversal</option>
+                                <option value="Emergency">Emergency</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="otherComplaintDiv" style="display: none;">
+                            <label class="form-label">Specify Other Issue</label>
+                            <input type="text" class="form-control" id="otherComplaintType">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description*</label>
+                            <textarea class="form-control" id="complaintDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Submit Complaint</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Check Modal -->
+    <div class="modal fade" id="statusModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Check Complaint Status</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="statusForm">
+                        <div class="mb-3">
+                            <label for="complaintId" class="form-label">Complaint ID</label>
+                            <input type="text" class="form-control" id="complaintId" required>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Check Status</button>
+                        </div>
+                    </form>
+                    <div id="statusResult" class="mt-4" style="display: none;">
+                        <h6>Complaint Status:</h6>
+                        <p id="statusText"></p>
+                        <div class="progress-tracker">
+                            <div class="progress-step" id="step1">Registered</div>
+                            <div class="progress-step" id="step2">Technician Allotted</div>
+                            <div class="progress-step" id="step3">Work in Progress</div>
+                            <div class="progress-step" id="step4">Resolved</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check authentication
+        if (!localStorage.getItem('customerLoggedIn')) {
+            window.location.href = 'index.html';
+        }
+
+        function logAction(action) {
+            const log = JSON.parse(localStorage.getItem('actionLog') || '[]');
+            const timestamp = new Date().toISOString();
+            log.push({ timestamp, action });
+            localStorage.setItem('actionLog', JSON.stringify(log));
+            
+            // Update system_log.txt
+            let systemLog = localStorage.getItem('system_log.txt') || '';
+            systemLog += `[${timestamp}] ${action}\n`;
+            localStorage.setItem('system_log.txt', systemLog);
+        }
+
+        function generateComplaintId() {
+            const timestamp = Date.now().toString().slice(-6);
+            const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            return `TNB${timestamp}${random}`;
+        }
+
+        function loadDivisions() {
+            const divisions = JSON.parse(localStorage.getItem('divisions') || '[]');
+            const divisionSelect = document.getElementById('complaintDivision');
+            divisionSelect.innerHTML = '<option value="">Select Division</option>';
+            divisions.forEach(division => {
+                divisionSelect.innerHTML += `<option value="${division.name}">${division.name}</option>`;
+            });
+        }
+
+        document.getElementById('complaintForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const complaintId = generateComplaintId();
+            const customerPhone = localStorage.getItem('customerPhone');
+            
+            const complaint = {
+                id: complaintId,
+                customerPhone: customerPhone,
+                name: document.getElementById('customerName').value,
+                type: document.getElementById('complaintType').value,
+                description: document.getElementById('complaintDescription').value,
+                division: document.getElementById('complaintDivision').value,
+                status: 'Registered',
+                date: new Date().toISOString()
+            };
+
+            let complaints = JSON.parse(localStorage.getItem('complaints') || '[]');
+            complaints.push(complaint);
+            localStorage.setItem('complaints', JSON.stringify(complaints));
+
+            logAction(`Customer submitted new complaint: ${complaintId}`);
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('complaintModal'));
+            modal.hide();
+
+            alert(`Complaint registered successfully!\nYour Complaint ID: ${complaintId}`);
+            this.reset();
+        });
+
+        document.getElementById('complaintType').addEventListener('change', function() {
+            document.getElementById('otherComplaintDiv').style.display = 
+                this.value === 'Other' ? 'block' : 'none';
+        });
+
+        document.getElementById('statusForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const complaintId = document.getElementById('complaintId').value;
+            const complaints = JSON.parse(localStorage.getItem('complaints') || '[]');
+            const complaint = complaints.find(c => c.id === complaintId);
+
+            const statusResult = document.getElementById('statusResult');
+            const statusText = document.getElementById('statusText');
+
+            if (complaint) {
+                statusText.textContent = `Status: ${complaint.status}`;
+                statusResult.style.display = 'block';
+
+                // Update progress tracker
+                const steps = ['Registered', 'Technician Allotted', 'Work in Progress', 'Resolved'];
+                const currentStepIndex = steps.indexOf(complaint.status);
+                
+                steps.forEach((step, index) => {
+                    const stepElement = document.getElementById(`step${index + 1}`);
+                    if (index <= currentStepIndex) {
+                        stepElement.classList.add('completed');
+                    } else {
+                        stepElement.classList.remove('completed');
+                    }
+                });
+
+                logAction(`Customer checked status for complaint: ${complaintId}`);
+            } else {
+                statusText.textContent = 'Complaint not found. Please check the ID and try again.';
+                statusResult.style.display = 'block';
+                document.querySelectorAll('.progress-step').forEach(step => step.classList.remove('completed'));
+            }
+        });
+
+        function logout() {
+            if (confirm("Are You Sure To Logout?")) {
+                const phone = localStorage.getItem('customerPhone');
+                logAction(`Customer logged out: ${phone}`);
+                localStorage.removeItem('customerLoggedIn');
+                localStorage.removeItem('customerPhone');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Initial load
+        loadDivisions();
+        logAction('Customer accessed dashboard');
+    </script>
+</body>
+</html>
+

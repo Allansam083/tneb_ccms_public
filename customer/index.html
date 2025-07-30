@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TNEB Complaint Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('image.jpg');
+            background-size: cover;
+            backdrop-filter: blur(3px);
+            background-color: #eff1ed;
+            height: 100vh;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            background: #2d2626;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            color: white;
+        }
+        .form-control {
+            background-color: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 12px;
+        }
+        .form-control:focus {
+            background-color: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.3);
+            color: white;
+            box-shadow: none;
+        }
+        .form-control::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        .login-btn {
+            background-color: #3498db;
+            border: none;
+            padding: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        .login-btn:hover {
+            background-color: #2980b9;
+        }
+        .verify-section {
+            display: none;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 2.5rem;
+            color:#cdbcbc;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="logo.png" alt="TNEB Logo" width="55" height="55" class="d-inline-block align-text-top">
+                TNEB Complaint Management System
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="login-container">
+            <h4 class="text-center mb-4">Login</h4>
+            
+            <div id="phone-section">
+                <form id="phoneForm" onsubmit="return sendOTP(event)">
+                    <div class="mb-4">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" id="phoneNo" placeholder="Enter your 10-digit number" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 login-btn">Send OTP</button>
+                </form>
+            </div>
+
+            <div id="otp-section" class="verify-section">
+                <form id="otpForm" onsubmit="return verifyOTP(event)">
+                    <div class="mb-4">
+                        <label class="form-label">Enter OTP</label>
+                        <input type="text" class="form-control" id="otp" placeholder="Enter 6-digit OTP" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 login-btn">Verify & Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p style>@2025 copyrights</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize localStorage if empty
+        if (!localStorage.getItem('actionLog')) {
+            localStorage.setItem('actionLog', JSON.stringify([]));
+        }
+
+        function logAction(action) {
+            const log = JSON.parse(localStorage.getItem('actionLog') || '[]');
+            const timestamp = new Date().toISOString();
+            log.push({ timestamp, action });
+            localStorage.setItem('actionLog', JSON.stringify(log));
+            
+            // Update system_log.txt
+            let systemLog = localStorage.getItem('system_log.txt') || '';
+            systemLog += `[${timestamp}] ${action}\n`;
+            localStorage.setItem('system_log.txt', systemLog);
+        }
+
+        function sendOTP(event) {
+            event.preventDefault();
+            const phoneNo = document.getElementById('phoneNo').value;
+            
+            if(!/^\d{10}$/.test(phoneNo)) {
+                alert('Please enter a valid 10-digit phone number');
+                return false;
+            }
+
+            // Log the action
+            logAction(`Customer requested OTP: ${phoneNo}`);
+            alert("OTP sent successfully");
+
+            // Hide phone section and show OTP section
+            document.getElementById('phone-section').style.display = 'none';
+            document.getElementById('otp-section').style.display = 'block';
+            
+            return false;
+        }
+
+        function verifyOTP(event) {
+            event.preventDefault();
+            
+            const otp = document.getElementById('otp').value;
+            const phoneNo = document.getElementById('phoneNo').value;
+
+            if(!/^\d{6}$/.test(otp)) {
+                alert('Please enter a valid 6-digit OTP');
+                return false;
+            }
+
+            // Log the successful login
+            logAction(`Customer logged in successfully: ${phoneNo}`);
+            
+            // Store login state and phone number
+            localStorage.setItem('customerLoggedIn', 'true');
+            localStorage.setItem('customerPhone', phoneNo);
+            
+            // Redirect to home page
+            window.location.href = 'home.html';
+            return false;
+        }
+
+        // Check if already logged in
+        if(localStorage.getItem('customerLoggedIn')) {
+            window.location.href = 'home.html';
+        }
+    </script>
+</body>
+</html>
+
